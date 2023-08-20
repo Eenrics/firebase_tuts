@@ -9,7 +9,9 @@ import {
     doc,
     onSnapshot,
     query,
-    where
+    where,
+    orderBy,
+    serverTimestamp
 } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -47,7 +49,8 @@ const firebaseConfig = {
 
     addDoc(colRef, {
         title: addBookFrom.title.value,
-        author: addBookFrom.author.value
+        author: addBookFrom.author.value,
+        createdAt: serverTimestamp(),
     })
     .then(() => {
         addBookFrom.reset()
@@ -80,7 +83,7 @@ onSnapshot(colRef, (snapshot) => {
 })
 
 // query
-const q = query(colRef, where("author", "==", "patrick"))
+const q = query(colRef, where("author", "==", "patrick"), orderBy('createdAt', 'desc')) // it we want it in ascending order, we can leave the second option of orderBy
 
 onSnapshot(q, (snapshot) => {
     let books = '<ul>'
@@ -90,4 +93,16 @@ onSnapshot(q, (snapshot) => {
     books += '</ul>'
     console.log({books})
     console.log(books)
+})
+
+// get a single document
+const docRef = doc(db, 'books', 'NbVIpkzTuWd1ew9hBXfg')
+
+getDoc(docRef)
+.then((doc) => {
+    console.log(doc.data(), (doc.id))
+})
+
+onSnapshot(docRef, (doc) => {
+    console.log(doc.data(), doc.id)
 })
