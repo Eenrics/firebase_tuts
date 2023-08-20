@@ -19,7 +19,8 @@ import {
     getAuth,
     createUserWithEmailAndPassword,
     signOut,
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+    onAuthStateChanged
 } from 'firebase/auth'
 
 const firebaseConfig = {
@@ -95,7 +96,7 @@ onSnapshot(colRef, (snapshot) => {
 // query
 const q = query(colRef, where("author", "==", "patrick"), orderBy('createdAt', 'desc')) // it we want it in ascending order, we can leave the second option of orderBy
 
-onSnapshot(q, (snapshot) => {
+const unsubCol = onSnapshot(q, (snapshot) => {
     let books = '<ul>'
     snapshot.docs.forEach((doc) => {
         books += `<li><b>Author</b>: ${doc.data().author}, <b>Title</b>: ${doc.data().title}, <b>ID</b>: ${doc.id} </li>`
@@ -113,7 +114,7 @@ getDoc(docRef)
     console.log(doc.data(), (doc.id))
 })
 
-onSnapshot(docRef, (doc) => {
+const unsubDoc = onSnapshot(docRef, (doc) => {
     console.log(doc.data(), doc.id)
 })
 
@@ -175,4 +176,18 @@ loginForm.addEventListener('submit', (e) => {
     .catch((err) => {
         console.log(err.message)
     })
+})
+
+// subscribing to auth changes
+const unsubAuth = onAuthStateChanged(auth, (user) => {
+    console.log('user status changed:', user)
+})
+
+// unsubscribing from changes (auth & db)
+const unsubButton = document.querySelector('.unsub')
+unsubButton.addEventListener('click', () => {
+    console.log('unsubscribing')
+    unsubCol()
+    unsubDoc()
+    unsubAuth()
 })
