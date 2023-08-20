@@ -3,7 +3,11 @@ import {
     getFirestore,
     collection,
     getDocs,
-    getDoc
+    getDoc,
+    addDoc,
+    deleteDoc,
+    doc,
+    onSnapshot
 } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -21,6 +25,7 @@ const firebaseConfig = {
 
   const colRef = collection(db, 'books')
 
+  // get collection data
   getDocs(colRef)
   .then((snapshot) => {
     let books = []
@@ -32,3 +37,42 @@ const firebaseConfig = {
   .catch(err => {
     console.log(err.message)
   })
+
+  // adding documents
+  const addBookFrom = document.querySelector('.add')
+  addBookFrom.addEventListener('submit', e => {
+    e.preventDefault()
+
+    addDoc(colRef, {
+        title: addBookFrom.title.value,
+        author: addBookFrom.author.value
+    })
+    .then(() => {
+        addBookFrom.reset()
+    })
+  })
+
+// deleting documents
+const deleteBookFrom = document.querySelector('.delete')
+deleteBookFrom.addEventListener('submit', e => {
+    e.preventDefault()
+
+    const docRef = doc(db, 'books', deleteBookFrom.id.value)
+    deleteDoc(docRef)
+    .then(() => {
+        deleteBookFrom.reset()
+    })
+})
+
+const display = document.querySelector('.display')
+
+// real time collection data
+onSnapshot(colRef, (snapshot) => {
+    let books = '<ul>'
+    snapshot.docs.forEach((doc) => {
+        books += `<li><b>Author</b>: ${doc.data().author}, <b>Title</b>: ${doc.data().title}, <b>ID</b>: ${doc.id} </li>`
+    })
+    books += '</ul>'
+    console.log({books})
+    display.innerHTML = books
+})
